@@ -8,14 +8,18 @@ SPEC_NULLARIES = ['⊥']
 UNARIES = ['~']
 SPEC_UNARIES = ['¬']
 
-BINARIES = ['v', '&', '>', '-']
-SPEC_BINARIES = [' ∨ ', ' ∧ ', ' ⟶  ', ' ⟷  ']
+BINARIES = ['v', '&', '^', '>', '-']
+SPEC_BINARIES = [' ∨ ', ' ∧ ', ' ⊕ ', ' ⟶  ', ' ⟷  ']
 
-CONNECTIVES = ['#', '~', 'v', '&', '>', '-']
-SPEC_CONNECTIVES = ['⊥', '¬', ' ∨ ', ' ∧ ', ' ⟶  ', ' ⟷  ']
+CONNECTIVES = ['#', '~', 'v', '&', '^', '>', '-']
+SPEC_CONNECTIVES = ['⊥', '¬', ' ∨ ', ' ∧ ', ' ⊕ ', ' ⟶  ', ' ⟷  ']
 
-TFS = {'~': lambda p: not p, 'v': lambda p, q: p or q, '&': lambda p, q: p and q,
-       '>': lambda p, q: not p or q, '-': lambda p, q: TFS['>'](p, q) and TFS['>'](q, p)}
+TFS = {'~': lambda p: not p,
+       'v': lambda p, q: p or q,
+       '&': lambda p, q: p and q,
+       '>': lambda p, q: not p or q,
+       '-': lambda p, q: TFS['>'](p, q) and TFS['>'](q, p), 
+       '^': lambda p, q: not TFS['-'](p, q)}
 
 
 class Symbol:
@@ -59,7 +63,7 @@ class Symbol:
         if self.type == 'atomic':
             return vals[self.symb]
         return TFS[self.symb](self.left(vals), self.right(vals))
-    
+
     def __hash__(self):
         return hash(self.formula)
 

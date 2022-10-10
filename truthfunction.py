@@ -11,7 +11,7 @@ class TruthFunction:
     it is stronger - and thus the Sentence with said TruthFunction can
     prove the second sentence.
     """
-    def __init__(self, sentence: 'Sentence'):
+    def __init__(self, sentence):
         """
         Creates a new TruthFunction on the given atomics for the given Sentence.
         """
@@ -44,7 +44,7 @@ class TruthFunction:
         Returns the length of the canonical form of the truth function.
         """
         return 2 ** len(self.atomics)
-    
+
     def __call__(self, vals: dict[str, bool]) -> bool:
         """
         Computes the truth function of a particular assignment of values to

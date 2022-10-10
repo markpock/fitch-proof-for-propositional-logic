@@ -16,7 +16,12 @@ d = Sentence('(R & S & ~T) v (~R & ~S) v (~R & T)')
 print(d)
 print(d.tf)
 
+e = Sentence('R ^ (~S v T)')
+print(e)
+print(e.tf)
+
 print(a.tf == b.tf)
 print(a.tf == c.tf)
 print(c.tf == b.tf)
 print(d.tf == c.tf)
+print(e.tf == d.tf)
