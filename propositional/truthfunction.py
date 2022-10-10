@@ -52,14 +52,11 @@ class TruthFunction:
         """
         return self.sentence.root(vals)
 
-    def __str__(self) -> str:
+    def __str__(self, displayExp = False) -> str:
         """
         Returns a String representation of the TruthFunction in canonical form.
         """
-        result, arr = f'{"  ".join(self.atomics)}\n', []
-        for vals in self.canonical:
-            arr.append(f'{"  ".join([str(val)[0] for val in vals.values()])}   {self(vals)}\n')
-        return result + ''.join(arr)
+        return self.__calcString([self.sentence], displayExp)
 
     def __gt__(self, other: 'TruthFunction') -> bool:
         """
@@ -108,4 +105,22 @@ class TruthFunction:
         return result
     
     def __repr__(self) -> str:
-        return str(self)
+        relevant = [ss for ss in self.sentence if ss.root.type != 'atomic']
+        relevant.reverse()
+        return self.__calcString(relevant)
+
+    def __calcString(self, sentences, displayExp = True) -> str:
+        """
+        Returns a String representation of the TruthFunction in canonical form with
+        all complex constituents.
+        """
+        subsentences = [self.__adjustLength(subsent, False) for subsent in sentences]
+        result, arr = f'{"  ".join(self.atomics)}  {"  ".join(subsentences) if displayExp else ""}\n', []
+        for vals in self.canonical:
+            values = [self.__adjustLength(subsent.tf(vals), subsent) for subsent in sentences]
+            arr.append(f'{"  ".join([str(val)[0] for val in vals.values()])}  {"  ".join(values)}\n')
+        return result + ''.join(arr)
+
+    @staticmethod
+    def __adjustLength(modifier, comparison):
+        return str(modifier) + ' ' * (len(str(comparison)) - len(str(modifier)))
