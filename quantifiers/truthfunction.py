@@ -1,4 +1,3 @@
-from __future__ import annotations
 from copy import copy
 from typing import Iterable
 
@@ -30,7 +29,7 @@ class TruthFunction:
         Generates the canonical form for given atomics - a list of dictionaries
         corresponding to every possible combination of truth values.
         """
-        canonical = [{} for _ in range(2 ** len(atomics))]
+        canonical = [{}] * 2 ** len(atomics)
         for i, vals in zip(range(2 ** len(atomics)), canonical):
             for j, atomic in zip(range(len(atomics)), atomics):
                 if i // (2 ** (len(atomics) - j - 1)) % 2 == 0:

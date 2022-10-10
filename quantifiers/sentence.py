@@ -1,6 +1,6 @@
 from io import TextIOWrapper
 from typing import Generator, Union
-from basis import SPEC_CONNECTIVES, CONNECTIVES, BINARIES, Symbol
+from basis import SPEC_CONNECTIVES, CONNECTIVES, BINARIES, UNARIES, FO, Symbol
 from truthfunction import TruthFunction
 
 
@@ -20,11 +20,12 @@ class Sentence:
             formula = self._replace(formula, SPEC_CONNECTIVES, CONNECTIVES)
             self.root = self._parse(formula.replace(' ', ''))
         self.formula = self.root.formula
-        self.tf = TruthFunction(self)
+        if not FO:
+            self.tf = TruthFunction(self)
         self.left, self.right = None, None
         if self.root.left:
             self.left = self.__class__(self.root.left.formula, self.root.left)
-            if self.root.symb == '~':
+            if self.root.symb in UNARIES:
                 self.right = self.left
             else:
                 self.right = self.__class__(self.root.right.formula, self.root.right)
@@ -57,8 +58,7 @@ class Sentence:
         arg1 = self._parse(self._trim(formula[:mc_pos]))
         arg2 = self._parse(self._trim(formula[mc_pos + 1:]))
         arg1_f = self._untrim(arg1.formula)
-        arg2_f = self._untrim(arg2.formula) if arg2.symb != mc else arg2.formula
-            
+        arg2_f = self._untrim(arg2.formula)
 
         return Symbol(mc, arg1, arg2, formula=f'{arg1_f}{mc}{arg2_f}')
 
@@ -72,19 +72,22 @@ class Sentence:
         """
         group_depth, connectives, enclosed = 0, {}, True
         for index, char in zip(range(start, len(formula)), formula[start:]):
+            if char == 'x':
+                continue
             if char == '(':
                 group_depth +=1
             if char == ')':
                 group_depth -= 1
-            if group_depth == 0 and index != len(formula) - 1 and char in BINARIES:
+            if group_depth == 0 and index != len(formula.replace('x', '')) - 1 and char in BINARIES:
                 connectives[index] = char
                 enclosed = False
         if start == 1 and enclosed:
+            opener = formula[0]
             neg = self._parse(formula[1:])
             formula = neg.formula
-            if len(formula) > 1:
+            if len(formula.replace('x', '')) > 1:
                 formula = f'({formula})'
-            return Symbol('~', neg, neg, f'~{formula}'), None
+            return Symbol(opener, neg, neg, f'{opener}{formula}'), None
         return enclosed, connectives
 
     def _setup(self, formula: str) -> Union[Symbol, int]:
@@ -96,7 +99,7 @@ class Sentence:
         """
         if len(formula) == 1:
             return Symbol(formula, formula=formula)
-        return int(formula[0] == '~')
+        return int(formula[0] in UNARIES)
 
     def _trim(self, arg: str) -> str:
         """
@@ -113,7 +116,7 @@ class Sentence:
         Ensures that arguments are enclosed in parentheses if necessary,
         returning the resultant str.
         """
-        if (arg[0] != '~' and len(arg) > 2) or (not self._enclosed(arg, 0)[0]):
+        if arg[0] != '~' and len(arg) > 2 and not self._enclosed(arg, 0)[0]:
             return f'({arg})'
         return arg
 
