@@ -14,6 +14,8 @@ SPEC_BINARIES = [' ∨ ', ' ∧ ', ' ⊕ ', ' ⟶  ', ' ⟷  ']
 CONNECTIVES = ['#', '~', 'v', '&', '^', '>', '-']
 SPEC_CONNECTIVES = ['⊥', '¬', ' ∨ ', ' ∧ ', ' ⊕ ', ' ⟶  ', ' ⟷  ']
 
+VALID = '()#~v&^>-⊥¬∨∧⊕⟶⟷ '
+
 TFS = {'~': lambda p: not p,
        'v': lambda p, q: p or q,
        '&': lambda p, q: p and q,
@@ -66,4 +68,3 @@ class Symbol:
 
     def __hash__(self):
         return hash(self.formula)
-

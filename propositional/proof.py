@@ -187,8 +187,8 @@ class Proof:
         if len(self.premises) == 0:
             if not conclusion.tf.taut(True):
                 return 'Not provable.'
-        # if Sentence.connect(self.premises, '&').tf < conclusion.tf:
-        #    return 'Not provable from given premises.'
+        if Sentence.connect(self.premises, '&').tf < conclusion.tf:
+            return 'Not provable from given premises.'
         if prove(conclusion, self, 0, []):
             return 'Proved.'
         else:

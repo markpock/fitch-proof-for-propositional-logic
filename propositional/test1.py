@@ -28,6 +28,8 @@ def main():
     result_flag = proof2.prove('R')
     print(result_flag)
     print(proof2)
+    with open('proof2.txt', 'w', encoding = 'utf-8') as f:
+        f.write(str(proof2))
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from copy import copy
 from typing import Iterable
+from basis import VALID
 
 
 class TruthFunction:
@@ -16,7 +17,7 @@ class TruthFunction:
         Creates a new TruthFunction on the given atomics for the given Sentence.
         """
         self.sentence = sentence
-        self.atomics = sorted(set(char for char in sentence.formula if char.isupper()))
+        self.atomics = sorted(set(char for char in sentence.formula if char not in VALID))
         self.true, self.false = [], []
         self.canonical = self._canonical(self.atomics)
         for vals in self.canonical:
@@ -90,7 +91,7 @@ class TruthFunction:
         proof purposes, takes into account the specific propositional
         variables used.
         """
-        return str(self) == str(other)
+        return str(self).replace(' ', '') == str(other).replace(' ', '')
     
     def taut(self, val: bool) -> bool:
         if val:
@@ -114,13 +115,26 @@ class TruthFunction:
         Returns a String representation of the TruthFunction in canonical form with
         all complex constituents.
         """
-        subsentences = [self.__adjustLength(subsent, False) for subsent in sentences]
+        subsentences = [TruthFunction.__adjust(subsent, False) for subsent in sentences]
         result, arr = f'{"  ".join(self.atomics)}  {"  ".join(subsentences) if displayExp else ""}\n', []
         for vals in self.canonical:
-            values = [self.__adjustLength(subsent.tf(vals), subsent) for subsent in sentences]
+            values = [TruthFunction.__adjust(subsent.tf(vals), subsent) for subsent in sentences]
             arr.append(f'{"  ".join([str(val)[0] for val in vals.values()])}  {"  ".join(values)}\n')
         return result + ''.join(arr)
 
     @staticmethod
-    def __adjustLength(modifier, comparison):
+    def __adjust(modifier, comparison):
+        """
+        Returns a string representation of modifier adjusted to match the length of
+        comparison.
+        """
         return str(modifier) + ' ' * (len(str(comparison)) - len(str(modifier)))
+
+    @staticmethod
+    def compare(sentences) -> str:
+        """
+        Prints the TruthFunctions of the sentences given side-by-side.
+        """
+        from sentence import Sentence
+        new_sent = Sentence.connect(sentences, '&')
+        return new_sent.tf.__calcString(sentences)

@@ -261,6 +261,12 @@ class Sentence:
         if other is None:
             return False
         return self._equal(self.root, other.root)
+    
+    def equivalent(self, other: 'Sentence') -> bool:
+        """
+        Does an equivalence check using truth functions.
+        """
+        return self.tf == other.tf
 
     @property
     def first(self) -> 'Sentence':
@@ -344,5 +350,5 @@ class Sentence:
             return sentences[0]
         num_args = len(sentences) // 2
         first = Sentence.connect(sentences[:num_args], connective)
-        second = Sentence.connect(sentences[num_args + 1:], connective)
+        second = Sentence.connect(sentences[num_args:], connective)
         return first.join(second, connective)

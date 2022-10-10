@@ -23,7 +23,7 @@ class Rule:
         return final
 
     @classmethod
-    def apply(cls, rule: str, premises: 'Proof', lines: Union[list[int], int],
+    def apply(cls, rule: str, premises, lines: Union[list[int], int],
               other: Sentence = None, fl: bool = True) -> tuple['Rule', Union[Sentence,
               tuple[Sentence]], int, int]:
         """
