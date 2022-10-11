@@ -23,11 +23,11 @@ class Sentence:
         self.tf = TruthFunction(self)
         self.left, self.right = None, None
         if self.root.left:
-            self.left = self.__class__(self.root.left.formula, self.root.left)
+            self.left = Sentence(self.root.left.formula, self.root.left)
             if self.root.symb == '~':
                 self.right = self.left
             else:
-                self.right = self.__class__(self.root.right.formula, self.root.right)
+                self.right = Sentence(self.root.right.formula, self.root.right)
 
     def _parse(self, formula: str) -> Symbol:
         """
@@ -35,34 +35,29 @@ class Sentence:
         the Symbol corresponding to its main connectives - or atomic, if the
         formula is an atomic sentence.
         """
-        start = self._setup(formula)
-        if isinstance(start, Symbol):
-            return start
-        
-        enclosed, connectives = self._enclosed(formula, start)
-        if isinstance(enclosed, Symbol):
-            return enclosed
-
-        while start == 0 and enclosed:
+        while True:
+            if len(formula) == 1:
+                return Symbol(formula, formula=formula)
+            start = int(formula[0] == '~')
+            enclosed, connectives = self._enclosed(formula[start:])
+            connectives = {pos + start: connectives[pos] for pos in connectives}
+            if start == 1 and enclosed:
+                neg = self._parse(formula[1:])
+                formula = f'({neg.formula})' if len(formula) > 1 else neg.formula
+                return Symbol('~', neg, neg, f'~{formula}')
+            if not enclosed: break
             formula = formula[1:-1]
-            start = self._setup(formula)
-            if isinstance(start, Symbol):
-                return start
-            enclosed, connectives = self._enclosed(formula, start)
-            if isinstance(enclosed, Symbol):
-                return enclosed
 
         formula, mc_pos = self._same_scope(formula, connectives)
         mc = formula[mc_pos]
         arg1 = self._parse(self._trim(formula[:mc_pos]))
         arg2 = self._parse(self._trim(formula[mc_pos + 1:]))
         arg1_f = self._untrim(arg1.formula)
-        arg2_f = self._untrim(arg2.formula) if arg2.symb != mc else arg2.formula
-            
+        arg2_f = self._untrim(arg2.formula) if arg2.symb != mc or arg2.symb == '>' else arg2.formula
 
         return Symbol(mc, arg1, arg2, formula=f'{arg1_f}{mc}{arg2_f}')
 
-    def _enclosed(self, formula: str, start: int) -> tuple[Union[bool, Symbol], Union[dict, None]]:
+    def _enclosed(self, formula: str) -> tuple[bool, dict[int, str]]:
         """
         Establishes whether or not the formula is 'enclosed' - either fully
         enclosed by unnecessary parens which can dropped or the argument of
@@ -71,32 +66,15 @@ class Sentence:
         and return the relevant negation Symbol.
         """
         group_depth, connectives, enclosed = 0, {}, True
-        for index, char in zip(range(start, len(formula)), formula[start:]):
+        for index, char in enumerate(formula):
             if char == '(':
                 group_depth +=1
             if char == ')':
                 group_depth -= 1
-            if group_depth == 0 and index != len(formula) - 1 and char in BINARIES:
+            if group_depth == 0 and char in BINARIES: # and index != len(formula) - 1
                 connectives[index] = char
                 enclosed = False
-        if start == 1 and enclosed:
-            neg = self._parse(formula[1:])
-            formula = neg.formula
-            if len(formula) > 1:
-                formula = f'({formula})'
-            return Symbol('~', neg, neg, f'~{formula}'), None
         return enclosed, connectives
-
-    def _setup(self, formula: str) -> Union[Symbol, int]:
-        """
-        Sets up the base case for the parse recursion - will return a Symbol
-        corresponding to the atomic on an atomic if the formula is an
-        atomic, similarly to enclosed. If not an atomic, sets a flag start
-        as an int determining whether or not the formula begins as a negation.
-        """
-        if len(formula) == 1:
-            return Symbol(formula, formula=formula)
-        return int(formula[0] == '~')
 
     def _trim(self, arg: str) -> str:
         """
@@ -113,7 +91,7 @@ class Sentence:
         Ensures that arguments are enclosed in parentheses if necessary,
         returning the resultant str.
         """
-        if (arg[0] != '~' and len(arg) > 2) or (not self._enclosed(arg, 0)[0]):
+        if (arg[0] != '~' and len(arg) > 2) or (not self._enclosed(arg)[0]):
             return f'({arg})'
         return arg
 

@@ -59,7 +59,7 @@ class TruthFunction:
         """
         return self.__calcString([self.sentence], displayExp)
 
-    def __gt__(self, other: 'TruthFunction') -> bool:
+    def __gt__(self, other: TruthFunction) -> bool:
         """
         Checks to see if this TruthFunction is strictly stronger than the other
         TruthFunction - if the Sentence from which the former is derived can
@@ -78,14 +78,14 @@ class TruthFunction:
                 return curr_val
         return curr_val
 
-    def __ge__(self, other: 'TruthFunction') -> bool:
+    def __ge__(self, other: TruthFunction) -> bool:
         """
         Checks to see if this Truth Function is weakly stronger than the other
         Truthfunction - i.e., its Sentence can prove the other Sentence.
         """
         return self == other or self > other
 
-    def __eq__(self, other: 'TruthFunction') -> bool:
+    def __eq__(self, other: TruthFunction) -> bool:
         """
         Checks to see if the TruthFunctions are logically equivalent. For
         proof purposes, takes into account the specific propositional
